@@ -12,6 +12,8 @@ namespace FlightAction
 {
     static class Program
     {
+        private const string RecurringFileUploadJobName = "Flight-Action-Recurring-File-Upload";
+
         static void Main(string[] args)
         {
             DomainExceptionHandler.HandleDomainExceptions();
@@ -20,11 +22,13 @@ namespace FlightAction
 
             GlobalConfigurationSetup();
 
-            CreateScheduler();
+            ExecuteScheduledJob();
 
-            using var server = new BackgroundJobServer();
+            //CreateScheduler();
 
-            TickerLoop().ConfigureAwait(false).GetAwaiter().GetResult();
+            //using var server = new BackgroundJobServer();
+
+            //TickerLoop().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         private static void GlobalConfigurationSetup()
@@ -48,14 +52,16 @@ namespace FlightAction
         private static void CreateScheduler()
         {
             string cronExp = "*/5 * * * *";// minute hour day month week
-            RecurringJob.AddOrUpdate(() => ExecuteScheduledJob(), cronExp);
+            RecurringJob.AddOrUpdate(RecurringFileUploadJobName, () => ExecuteScheduledJob(), cronExp);
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
+        [DisableConcurrentExecution(1000 * 300)]
+        [AutomaticRetry(Attempts = 0)]
         public static void ExecuteScheduledJob()
         {
             var fileUploadService = DependencyUtility.Container.Resolve<IFileUploadService>();
-            var result = fileUploadService.GetShows().Result;
+            fileUploadService.ProcessFilesAsync();
         }
 
         private static async Task TickerLoop()

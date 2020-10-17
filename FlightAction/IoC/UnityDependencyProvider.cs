@@ -6,6 +6,8 @@ using FlightAction.Services.Interfaces;
 using Flurl.Http;
 using Framework.Extensions;
 using Framework.IoC;
+using Framework.Utility;
+using Framework.Utility.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Unity;
@@ -65,6 +67,7 @@ namespace FlightAction.IoC
                     User_Agent = "MyCustomUserAgent" // Flurl will convert that underscore to a hyphen
                 }));
 
+            container.RegisterType<IDirectoryUtility, DirectoryUtility>();
             container.RegisterType<IFileUploadService, FileUploadService>();
         }
     }

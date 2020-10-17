@@ -1,28 +1,98 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
+using CSharpFunctionalExtensions;
+using FlightAction.Api;
 using FlightAction.Services.Interfaces;
 using Flurl;
 using Flurl.Http;
+using Framework.Extensions;
+using Framework.Utility;
+using Framework.Utility.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 
 namespace FlightAction.Services
 {
     public class FileUploadService : IFileUploadService
     {
-        private readonly string _baseUrl;
-        private readonly string _apiKey;
+        private readonly IDirectoryUtility _directoryUtility;
+        private readonly ILogger _logger;
+        private readonly Lazy<string> _baseUrl;
+        private readonly Lazy<string> _apiKey;
+        private readonly Lazy<string> _parentFileLocation;
+        private readonly Lazy<string> _processedFileLocation;
 
-        public FileUploadService(IConfiguration configuration)
+        private const string NoNewFileToUploadMessage = "No new files available to upload";
+
+        public FileUploadService(Lazy<IConfiguration> configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
-            _baseUrl = configuration["ServerHost"];
+            _baseUrl = new Lazy<string>(configuration.Value["ServerHost"]);
+            _parentFileLocation = new Lazy<string>(configuration.Value["ParentFileLocation"]);
+            _processedFileLocation = new Lazy<string>(configuration.Value["ProcessedFileLocation"]);
+
+            _directoryUtility = directoryUtility;
+            _logger = logger;
         }
 
-        public Task<List<string>> GetShows()
+        public async Task ProcessFilesAsync()
         {
-            return _baseUrl
-                .AppendPathSegment("v1/podcasts/shownum/episodes.json")
-                .SetQueryParam("api_key", _apiKey)
-                .GetJsonAsync<List<string>>();
+            await TryCatchExtension.ExecuteAndHandleErrorAsync(
+                async () =>
+                {
+                    var getResult = _directoryUtility.GetAllFilesInDirectory(_parentFileLocation.Value);
+                    if (getResult.HasNoValue)
+                    {
+                        _logger.Information(NoNewFileToUploadMessage);
+                    }
+
+                    var currentProcessedDirectory = PrepareProcessedDirectory();
+
+                    foreach (var item in getResult.Value)
+                    {
+                        var fileUploadResult = await UploadFileToServerAsync(item);
+                        if (fileUploadResult.IsSuccess)
+                            _directoryUtility.Move(item, Path.Combine(currentProcessedDirectory, Path.GetFileName(item)));
+                    }
+                },
+                ex =>
+                {
+                    _logger.Fatal(ex, $"Error occured in {nameof(ProcessFilesAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
+                    return false;
+                });
+        }
+
+        private string PrepareProcessedDirectory()
+        {
+            var currentProcessedDirectory = Path.Combine(_processedFileLocation.Value, DateTime.Now.ToString(Constants.DateFormatter.yyyy_MM_dd_Dash_Delimited));
+
+            _directoryUtility.CreateFolderIfNotExistAsync(_processedFileLocation.Value);
+            _directoryUtility.CreateFolderIfNotExistAsync(currentProcessedDirectory);
+
+            return currentProcessedDirectory;
+        }
+
+        private async Task<Result<bool>> UploadFileToServerAsync(string fileName)
+        {
+            //File.ReadAllBytes(fileName)
+            var result = false;
+
+            await TryCatchExtension.ExecuteAndHandleErrorAsync(
+                async () =>
+                {
+                    result = await _baseUrl
+                            .Value
+                            .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
+                            .PostMultipartAsync(mp => mp
+                                .AddFile("file1", fileName)).ReceiveJson<bool>();
+                },
+                ex =>
+                {
+                    _logger.Fatal(ex, $"Error occured in {nameof(UploadFileToServerAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
+                    return false;
+                });
+
+            return result ? Result.Success(true) : Result.Failure<bool>("File upload failed. Please check log");
         }
     }
 
