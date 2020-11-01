@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FlightAction.Api;
+using FlightAction.DTO;
 using FlightAction.Services.Interfaces;
-using Flurl;
 using Flurl.Http;
+using Flurl.Http.Content;
 using Framework.Extensions;
 using Framework.Utility;
 using Framework.Utility.Interfaces;
@@ -74,17 +76,24 @@ namespace FlightAction.Services
 
         private async Task<Result<bool>> UploadFileToServerAsync(string fileName)
         {
-            //File.ReadAllBytes(fileName)
             var result = false;
 
             await TryCatchExtension.ExecuteAndHandleErrorAsync(
                 async () =>
                 {
+                    var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new FileUploadDTO
+                    {
+                        FileName = fileName,
+                        FileBytes = File.ReadAllBytes(fileName)
+                    });
+
+                    var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
+
                     result = await _baseUrl
-                            .Value
-                            .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
-                            .PostMultipartAsync(mp => mp
-                                .AddFile("file1", fileName)).ReceiveJson<bool>();
+                             .Value
+                             .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
+                             .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
+                             .PostAsync(content).ReceiveJson<bool>();
                 },
                 ex =>
                 {
@@ -95,5 +104,4 @@ namespace FlightAction.Services
             return result ? Result.Success(true) : Result.Failure<bool>("File upload failed. Please check log");
         }
     }
-
 }

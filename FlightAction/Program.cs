@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using FlightAction.IoC;
+﻿using FlightAction.IoC;
 using FlightAction.Services.Interfaces;
 using Framework.IoC;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using System;
+using System.Threading.Tasks;
 using Unity;
 using DomainExceptionHandler = FlightAction.ExceptionHandling.DomainExceptionHandler;
 
@@ -61,7 +61,7 @@ namespace FlightAction
         public static void ExecuteScheduledJob()
         {
             var fileUploadService = DependencyUtility.Container.Resolve<IFileUploadService>();
-            fileUploadService.ProcessFilesAsync();
+            fileUploadService.ProcessFilesAsync().Wait();
         }
 
         private static async Task TickerLoop()
