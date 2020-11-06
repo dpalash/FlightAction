@@ -50,11 +50,11 @@ namespace FlightAction.Services
 
                     var currentProcessedDirectory = PrepareProcessedDirectory();
 
-                    foreach (var item in getResult.Value)
+                    foreach (var filePath in getResult.Value)
                     {
-                        var fileUploadResult = await UploadFileToServerAsync(item);
+                        var fileUploadResult = await UploadFileToServerAsync(filePath);
                         if (fileUploadResult.IsSuccess)
-                            _directoryUtility.Move(item, Path.Combine(currentProcessedDirectory, Path.GetFileName(item)));
+                            _directoryUtility.Move(filePath, Path.Combine(currentProcessedDirectory, Path.GetFileName(filePath)));
                     }
                 },
                 ex =>
@@ -74,7 +74,7 @@ namespace FlightAction.Services
             return currentProcessedDirectory;
         }
 
-        private async Task<Result<bool>> UploadFileToServerAsync(string fileName)
+        private async Task<Result<bool>> UploadFileToServerAsync(string filePath)
         {
             var result = false;
 
@@ -83,8 +83,8 @@ namespace FlightAction.Services
                 {
                     var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new FileUploadDTO
                     {
-                        FileName = fileName,
-                        FileBytes = File.ReadAllBytes(fileName)
+                        FileName = Path.GetFileName(filePath),
+                        FileBytes = File.ReadAllBytes(filePath)
                     });
 
                     var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
