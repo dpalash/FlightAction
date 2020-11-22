@@ -81,17 +81,33 @@ namespace FlightAction.Services
             await TryCatchExtension.ExecuteAndHandleErrorAsync(
                 async () =>
                 {
-                    var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new FileUploadDTO
+                    var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
+                    {
+                        UserName = "dpalash23",
+                        Password = Encoding.UTF8.GetBytes("pass12345")
+                    });
+
+                    var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
+
+
+                    var authenticateResponse = await ("https://localhost:44317/api/authentication")
+                        .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
+                        .AppendPathSegment("authenticate")
+                        .PostAsync(content).ReceiveJson<AuthenticateResponseDTO>();
+
+
+                    json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new FileUploadDTO
                     {
                         FileName = Path.GetFileName(filePath),
                         FileBytes = File.ReadAllBytes(filePath)
                     });
 
-                    var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
+                    content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
 
                     result = await _baseUrl
                              .Value
                              .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
+                             .WithHeader("Authorization", $"Bearer {authenticateResponse.Token}")
                              .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
                              .PostAsync(content).ReceiveJson<bool>();
                 },
@@ -103,5 +119,28 @@ namespace FlightAction.Services
 
             return result ? Result.Success(true) : Result.Failure<bool>("File upload failed. Please check log");
         }
+    }
+
+    [Serializable]
+    public class AuthenticateRequestDTO
+    {
+        public string UserName { get; set; }
+
+        public byte[] Password { get; set; }
+
+        public bool IsRemember { get; set; }
+    }
+
+    public class AuthenticateResponseDTO
+    {
+        public int Id { get; set; }
+
+        public string UserName { get; set; }
+
+        public string Role { get; set; }
+
+        public string Token { get; set; }
+
+        public bool IsRemember { get; set; }
     }
 }
