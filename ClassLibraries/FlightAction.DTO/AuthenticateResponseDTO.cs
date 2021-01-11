@@ -16,6 +16,9 @@ namespace FlightAction.DTO
         [JsonProperty("employeeId")]
         public int EmployeeId { get; set; }
 
+        [JsonProperty("companyId")]
+        public int CompanyId { get; set; }
+
         [JsonProperty("roleId")]
         public int RoleId { get; set; }
 

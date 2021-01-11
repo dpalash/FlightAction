@@ -89,7 +89,7 @@ namespace FlightAction.Services
                  {
                      var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
                      {
-                         UserName = "dpalash",
+                         UserName = "DemoE01",
                          Password = "12345"
                      });
 
@@ -99,13 +99,17 @@ namespace FlightAction.Services
                          .Value
                          .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
                          .AppendPathSegment(ApiCollection.AuthenticationApi.Segment)
-                         .PostAsync(content).ReceiveJson<AuthenticateResponseDTO>();
+                         .PostAsync(content).ReceiveJson<PrometheusResponse>();
+
+                    var responseData = authenticateResponse.Data.ToString().DeserializeObject<AuthenticateResponseDTO>();
 
                      json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new TicketFileDTO
                      {
                          FileName = Path.GetFileName(filePath),
                          FileType = GetFileType(filePath),
                          MachineInfoDTO = MachineInfoDTO.Create(),
+                         EmployeeId = responseData.EmployeeId,
+                         CompanyId = responseData.CompanyId,
                          FileBytes = File.ReadAllBytes(filePath)
                      });
 
@@ -114,7 +118,7 @@ namespace FlightAction.Services
                      var result = await _baseUrl
                               .Value
                               .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
-                              .WithHeader("Authorization", $"Bearer {authenticateResponse.Token}")
+                              .WithHeader("Authorization", $"Bearer {responseData.Token}")
                               .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
                               .PostAsync(content).ReceiveJson<PrometheusResponse>();
 

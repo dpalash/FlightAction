@@ -16,6 +16,12 @@ namespace FlightAction.DTO
         [JsonProperty("machineInfoDTO")]
         public MachineInfoDTO MachineInfoDTO { get; set; }
 
+        [JsonProperty("employeeId")]
+        public int EmployeeId { get; set; }
+
+        [JsonProperty("companyId")]
+        public int CompanyId { get; set; }
+
         [JsonProperty("fileBytes")]
         public byte[] FileBytes { get; set; }
     }
