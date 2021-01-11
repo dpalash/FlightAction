@@ -4,10 +4,16 @@ namespace FlightAction.Api
     {
         public const string DefaultHeader = "sf-api-version";
 
+        public struct AuthenticationApi
+        {
+            public const string DefaultVersion = "1.0";
+            public const string Segment = "authentication/authenticate";
+        }
+
         public struct FileUploadApi
         {
             public const string DefaultVersion = "1.0";
-            public const string Segment = "/uploadFile";
+            public const string Segment = "ticket/register";
         }
     }
 }

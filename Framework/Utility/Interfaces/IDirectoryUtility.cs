@@ -6,7 +6,7 @@ namespace Framework.Utility.Interfaces
 {
     public interface IDirectoryUtility
     {
-        Maybe<IEnumerable<string>> GetAllFilesInDirectory(string dir, string searchPattern = "*.*");
+        Maybe<IEnumerable<string>> GetAllFilesInDirectory(string dir, List<string> extensions = null, string searchPattern = "*.*");
         DirectoryInfo CreateFolderIfNotExistAsync(string folderNameWithPath);
         Result Move(string sourcePath, string targetPath);
         void CopyDirectoryStructure(DirectoryInfo source, DirectoryInfo target);

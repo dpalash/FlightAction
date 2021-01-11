@@ -8,6 +8,7 @@ namespace Framework.Utility
     {
         public bool RethrowException { get; set; }
         public TResult DefaultResult { get; set; }
+        public Action? AdditionalAction { get; set; }
     }
 
     public static class TryCatchExtension
@@ -173,7 +174,7 @@ namespace Framework.Utility
             }
         }
 
-        public static async Task<TResult> ExecuteAndHandleErrorAsync<TResult>(Func<Task<TResult>> actionAsync, Func<Exception, Task<TryCatchExtensionResult<TResult>>> errorHandlerAsync)
+        public static async Task<TResult> ExecuteAndHandleErrorAsync<TResult>(this Func<Task<TResult>> actionAsync, Func<Exception, TryCatchExtensionResult<TResult>> errorHandler)
         {
             ExceptionDispatchInfo capturedException;
             try
@@ -186,7 +187,8 @@ namespace Framework.Utility
                 capturedException = ExceptionDispatchInfo.Capture(ex);
             }
 
-            var errorResult = await errorHandlerAsync(capturedException.SourceException).ConfigureAwait(false);
+            var errorResult = errorHandler(capturedException.SourceException);
+            errorResult.AdditionalAction?.Invoke();
             if (errorResult.RethrowException)
             {
                 capturedException.Throw();

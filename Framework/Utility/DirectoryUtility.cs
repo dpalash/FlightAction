@@ -19,11 +19,40 @@ namespace Framework.Utility
             _logger = logger;
         }
 
-        public Maybe<IEnumerable<string>> GetAllFilesInDirectory(string dir, string searchPattern = "*.*")
+        public Maybe<IEnumerable<string>> GetAllFilesInDirectory(string dir, List<string> extensions = null, string searchPattern = "*.*")
         {
-            return Directory.Exists(dir)
-                ? Directory.GetFiles(dir, searchPattern, SearchOption.AllDirectories)
-                : null;
+            if (Directory.Exists(dir))
+            {
+                if (extensions == null)
+                    return Directory.GetFiles(dir, searchPattern, SearchOption.AllDirectories);
+
+                var files = Directory.GetFiles(dir, searchPattern, SearchOption.AllDirectories)
+                        .Where(file => extensions
+                        .Any(e => string.Compare(Path.GetExtension(file), e, StringComparison.InvariantCultureIgnoreCase) == 0))
+                        .ToList();
+
+                if (files.Any())
+                    return files;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the names of files in a specified directories that match the specified patterns using LINQ
+        /// </summary>
+        /// <param name="srcDirs">The directories to search</param>
+        /// <param name="searchPatterns">the list of search patterns</param>
+        /// <param name="searchOption"></param>
+        /// <returns>The list of files that match the specified pattern</returns>
+        public static string[] GetFilesUsingLinq(string[] srcDirs, string[] searchPatterns, SearchOption searchOption = SearchOption.AllDirectories)
+        {
+            var r = from dir in srcDirs
+                    from searchPattern in searchPatterns
+                    from f in Directory.GetFiles(dir, searchPattern, searchOption)
+                    select f;
+
+            return r.ToArray();
         }
 
         public DirectoryInfo CreateFolderIfNotExistAsync(string folderNameWithPath)
@@ -81,12 +110,12 @@ namespace Framework.Utility
                 return Result.Failure($"{nameof(path)} is null/empty");
 
             if (!File.Exists(path))
-                return Result.Ok($"[{path}] is already deleted");
+                return Result.Success($"[{path}] is already deleted");
 
             try
             {
                 File.Delete(path);
-                return Result.Ok();
+                return Result.Success();
             }
             catch (Exception e)
             {

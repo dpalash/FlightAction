@@ -1,14 +1,18 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FlightAction.Api;
 using FlightAction.DTO;
+using FlightAction.DTO.Enum;
 using FlightAction.Services.Interfaces;
 using Flurl.Http;
 using Flurl.Http.Content;
+using Framework.Base.ModelEntity;
 using Framework.Extensions;
+using Framework.Models;
 using Framework.Utility;
 using Framework.Utility.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -22,16 +26,15 @@ namespace FlightAction.Services
         private readonly ILogger _logger;
         private readonly Lazy<string> _baseUrl;
         private readonly Lazy<string> _apiKey;
-        private readonly Lazy<string> _parentFileLocation;
-        private readonly Lazy<string> _processedFileLocation;
+        private readonly Lazy<FileLocation> _fileLocation;
 
+        private const string ProcessedFileLocation = "Processed";
         private const string NoNewFileToUploadMessage = "No new files available to upload";
 
         public FileUploadService(Lazy<IConfiguration> configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
             _baseUrl = new Lazy<string>(configuration.Value["ServerHost"]);
-            _parentFileLocation = new Lazy<string>(configuration.Value["ParentFileLocation"]);
-            _processedFileLocation = new Lazy<string>(configuration.Value["ProcessedFileLocation"]);
+            _fileLocation = new Lazy<FileLocation>(configuration.Value.GetSection("FileLocation").Get<FileLocation>());
 
             _directoryUtility = directoryUtility;
             _logger = logger;
@@ -42,19 +45,24 @@ namespace FlightAction.Services
             await TryCatchExtension.ExecuteAndHandleErrorAsync(
                 async () =>
                 {
-                    var getResult = _directoryUtility.GetAllFilesInDirectory(_parentFileLocation.Value);
-                    if (getResult.HasNoValue)
+                    foreach (var prop in _fileLocation.Value.GetType().GetProperties())
                     {
-                        _logger.Information(NoNewFileToUploadMessage);
-                    }
+                        var currentDirectory = prop.GetValue(_fileLocation.Value, null).ToString();
+                        var getResult = _directoryUtility.GetAllFilesInDirectory(currentDirectory);
+                        if (getResult.HasNoValue)
+                        {
+                            _logger.Information(NoNewFileToUploadMessage);
+                            continue;
+                        }
 
-                    var currentProcessedDirectory = PrepareProcessedDirectory();
+                        var currentProcessedDirectory = PrepareProcessedDirectory(currentDirectory);
 
-                    foreach (var filePath in getResult.Value)
-                    {
-                        var fileUploadResult = await UploadFileToServerAsync(filePath);
-                        if (fileUploadResult.IsSuccess)
-                            _directoryUtility.Move(filePath, Path.Combine(currentProcessedDirectory, Path.GetFileName(filePath)));
+                        foreach (var filePath in getResult.Value)
+                        {
+                            var fileUploadResult = await UploadFileToServerAsync(filePath);
+                            if (fileUploadResult.IsSuccess)
+                                _directoryUtility.Move(filePath, Path.Combine(currentProcessedDirectory, Path.GetFileName(filePath)));
+                        }
                     }
                 },
                 ex =>
@@ -64,11 +72,11 @@ namespace FlightAction.Services
                 });
         }
 
-        private string PrepareProcessedDirectory()
+        private string PrepareProcessedDirectory(string currentDirectory)
         {
-            var currentProcessedDirectory = Path.Combine(_processedFileLocation.Value, DateTime.Now.ToString(Constants.DateFormatter.yyyy_MM_dd_Dash_Delimited));
+            var currentProcessedDirectory = Path.Combine(currentDirectory, ProcessedFileLocation, DateTime.Now.ToString(Constants.DateFormatter.yyyy_MM_dd_Dash_Delimited));
 
-            _directoryUtility.CreateFolderIfNotExistAsync(_processedFileLocation.Value);
+            _directoryUtility.CreateFolderIfNotExistAsync(ProcessedFileLocation);
             _directoryUtility.CreateFolderIfNotExistAsync(currentProcessedDirectory);
 
             return currentProcessedDirectory;
@@ -76,71 +84,78 @@ namespace FlightAction.Services
 
         private async Task<Result<bool>> UploadFileToServerAsync(string filePath)
         {
-            var result = false;
+            return await TryCatchExtension.ExecuteAndHandleErrorAsync(
+                 async () =>
+                 {
+                     var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
+                     {
+                         UserName = "dpalash",
+                         Password = "12345"
+                     });
 
-            await TryCatchExtension.ExecuteAndHandleErrorAsync(
-                async () =>
-                {
-                    var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
-                    {
-                        UserName = "dpalash23",
-                        Password = Encoding.UTF8.GetBytes("pass12345")
-                    });
+                     var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
 
-                    var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
+                     var authenticateResponse = await _baseUrl
+                         .Value
+                         .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
+                         .AppendPathSegment(ApiCollection.AuthenticationApi.Segment)
+                         .PostAsync(content).ReceiveJson<AuthenticateResponseDTO>();
 
+                     json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new TicketFileDTO
+                     {
+                         FileName = Path.GetFileName(filePath),
+                         FileType = GetFileType(filePath),
+                         MachineInfoDTO = MachineInfoDTO.Create(),
+                         FileBytes = File.ReadAllBytes(filePath)
+                     });
 
-                    var authenticateResponse = await ("https://localhost:44317/api/authentication")
-                        .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
-                        .AppendPathSegment("authenticate")
-                        .PostAsync(content).ReceiveJson<AuthenticateResponseDTO>();
+                     content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
 
+                     var result = await _baseUrl
+                              .Value
+                              .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
+                              .WithHeader("Authorization", $"Bearer {authenticateResponse.Token}")
+                              .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
+                              .PostAsync(content).ReceiveJson<PrometheusResponse>();
 
-                    json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new FileUploadDTO
-                    {
-                        FileName = Path.GetFileName(filePath),
-                        FileBytes = File.ReadAllBytes(filePath)
-                    });
+                     return result.StatusCode == HttpStatusCode.OK ? Result.Success(true) : Result.Failure<bool>("File upload failed. Please check log");
+                 },
+                 ex => new TryCatchExtensionResult<Result<bool>>
+                 {
+                     AdditionalAction = () =>
+                     {
+                         _logger.Fatal(ex, $"Error occured in {nameof(UploadFileToServerAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
+                     },
 
-                    content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
-
-                    result = await _baseUrl
-                             .Value
-                             .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
-                             .WithHeader("Authorization", $"Bearer {authenticateResponse.Token}")
-                             .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
-                             .PostAsync(content).ReceiveJson<bool>();
-                },
-                ex =>
-                {
-                    _logger.Fatal(ex, $"Error occured in {nameof(UploadFileToServerAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
-                    return false;
-                });
-
-            return result ? Result.Success(true) : Result.Failure<bool>("File upload failed. Please check log");
+                     DefaultResult = Result.Failure<bool>($"Error message: {ex.Message}. Details: {ex.GetExceptionDetailMessage()}"),
+                     RethrowException = false
+                 });
         }
-    }
 
-    [Serializable]
-    public class AuthenticateRequestDTO
-    {
-        public string UserName { get; set; }
+        private FileTypeEnum GetFileType(string filePath)
+        {
+            var fileType = FileTypeEnum.Air;
 
-        public byte[] Password { get; set; }
+            switch (filePath)
+            {
+                // ReSharper disable once AssignNullToNotNullAttribute
+                case var _ when filePath.ToLower().Contains(Enum.GetName(typeof(FileTypeEnum), FileTypeEnum.Air)?.ToLower()):
+                    fileType = FileTypeEnum.Air;
+                    break;
 
-        public bool IsRemember { get; set; }
-    }
+                // ReSharper disable once AssignNullToNotNullAttribute
+                case var _ when filePath.ToLower().Contains(Enum.GetName(typeof(FileTypeEnum), FileTypeEnum.Mir)?.ToLower()):
+                    fileType = FileTypeEnum.Mir;
+                    break;
 
-    public class AuthenticateResponseDTO
-    {
-        public int Id { get; set; }
+                // ReSharper disable once AssignNullToNotNullAttribute
+                case var _ when filePath.ToLower().Contains(Enum.GetName(typeof(FileTypeEnum), FileTypeEnum.Pnr)?.ToLower()):
+                    fileType = FileTypeEnum.Pnr;
+                    break;
 
-        public string UserName { get; set; }
+            }
 
-        public string Role { get; set; }
-
-        public string Token { get; set; }
-
-        public bool IsRemember { get; set; }
+            return fileType;
+        }
     }
 }
