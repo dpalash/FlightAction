@@ -61,7 +61,9 @@ namespace FlightAction.Services
                         {
                             var fileUploadResult = await UploadFileToServerAsync(filePath);
                             if (fileUploadResult.IsSuccess)
+                            {
                                 _directoryUtility.Move(filePath, Path.Combine(currentProcessedDirectory, Path.GetFileName(filePath)));
+                            }
                         }
                     }
                 },
@@ -74,7 +76,8 @@ namespace FlightAction.Services
 
         private string PrepareProcessedDirectory(string currentDirectory)
         {
-            var currentProcessedDirectory = Path.Combine(currentDirectory, ProcessedFileLocation, DateTime.Now.ToString(Constants.DateFormatter.yyyy_MM_dd_Dash_Delimited));
+            var currentProcessedDirectory = Path.Combine(currentDirectory, @"..\");
+            currentProcessedDirectory = Path.Combine(currentProcessedDirectory, ProcessedFileLocation, DateTime.Now.ToString(Constants.DateFormatter.yyyy_MM_dd_Dash_Delimited));
 
             _directoryUtility.CreateFolderIfNotExistAsync(ProcessedFileLocation);
             _directoryUtility.CreateFolderIfNotExistAsync(currentProcessedDirectory);
@@ -101,7 +104,7 @@ namespace FlightAction.Services
                          .AppendPathSegment(ApiCollection.AuthenticationApi.Segment)
                          .PostAsync(content).ReceiveJson<PrometheusResponse>();
 
-                    var responseData = authenticateResponse.Data.ToString().DeserializeObject<AuthenticateResponseDTO>();
+                     var responseData = authenticateResponse.Data.ToString().DeserializeObject<AuthenticateResponseDTO>();
 
                      json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new TicketFileDTO
                      {

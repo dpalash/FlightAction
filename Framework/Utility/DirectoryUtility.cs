@@ -23,13 +23,15 @@ namespace Framework.Utility
         {
             if (Directory.Exists(dir))
             {
-                if (extensions == null)
-                    return Directory.GetFiles(dir, searchPattern, SearchOption.AllDirectories);
+                List<string> files;
 
-                var files = Directory.GetFiles(dir, searchPattern, SearchOption.AllDirectories)
+                if (extensions != null)
+                    files = Directory.GetFiles(dir, searchPattern, SearchOption.AllDirectories)
                         .Where(file => extensions
                         .Any(e => string.Compare(Path.GetExtension(file), e, StringComparison.InvariantCultureIgnoreCase) == 0))
                         .ToList();
+                else
+                    files = Directory.GetFiles(dir, searchPattern, SearchOption.AllDirectories).ToList();
 
                 if (files.Any())
                     return files;
