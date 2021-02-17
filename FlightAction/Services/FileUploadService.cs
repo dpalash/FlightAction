@@ -56,7 +56,7 @@ namespace FlightAction.Services
                             continue;
                         }
 
-                        _logger.Information($"Started processing {getResult.Value.Count()} file(s). Start-Time: {DateTime.UtcNow}");
+                        _logger.Information($"Started processing [{getResult.Value.Count()}] file(s) from location: [{currentDirectory}]. Start-Time: {DateTime.UtcNow}");
 
                         var currentProcessedDirectory = PrepareProcessedDirectory(currentDirectory);
 
@@ -69,7 +69,7 @@ namespace FlightAction.Services
                             }
                         }
 
-                        _logger.Information($"Processing completed at: {DateTime.UtcNow}");
+                        _logger.Information($"Processing files from location: [{currentDirectory}] completed at: {DateTime.UtcNow}");
                     }
                 },
                 ex =>

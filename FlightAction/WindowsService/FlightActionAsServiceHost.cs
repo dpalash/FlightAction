@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FlightAction.Services.Interfaces;
-using Framework.IoC;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -24,8 +23,6 @@ namespace FlightAction.WindowsService
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var configuration = DependencyUtility.Resolve<IConfiguration>();
-
             _logger.Information("Service started");
             var processingIntervalInSeconds = Convert.ToDouble(_configuration["IntervalInSeconds"]);
 
