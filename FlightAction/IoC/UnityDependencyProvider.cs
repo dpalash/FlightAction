@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using FlightAction.Services;
 using FlightAction.Services.Interfaces;
-using Flurl.Http;
-using Framework.Extensions;
 using Framework.IoC;
 using Framework.Utility;
 using Framework.Utility.Interfaces;
@@ -17,12 +15,12 @@ namespace FlightAction.IoC
 {
     public class UnityDependencyProvider : IDependencyProvider
     {
-        private IUnityContainer _container;
-        private IConfiguration Configuration => _container.Resolve<IConfiguration>();
+        private IUnityContainer _unityContainer;
+        private IConfiguration Configuration => _unityContainer.Resolve<IConfiguration>();
 
-        public void RegisterDependencies(IUnityContainer container)
+        public IUnityContainer RegisterDependencies(IUnityContainer container)
         {
-            _container = container;
+            _unityContainer = container;
 
             DependencyUtility.SetContainer(container);
 
@@ -36,7 +34,7 @@ namespace FlightAction.IoC
                    .Build();
 
                 return configuration;
-            }, new SingletonLifetimeManager());
+            }, new ContainerControlledLifetimeManager());
 
             container.RegisterFactory<ILogger>(m =>
            {
@@ -51,24 +49,10 @@ namespace FlightAction.IoC
                return log;
            }, new ContainerControlledLifetimeManager());
 
-            // Do this in Startup. All calls to SimpleCast will use the same HttpClient instance.
-            FlurlHttp.ConfigureClient(Configuration["ServerHost"], cli => cli
-                .Configure(settings =>
-                {
-                    // keeps logging & error handling out of SimpleCastClient
-                    settings.BeforeCall = call => Framework.Logger.Log.Logger.Information($"Calling: {call.Request.RequestUri}");
-                    settings.AfterCall = call => Framework.Logger.Log.Logger.Information($"Execution completed: {call.Request.RequestUri}");
-                    settings.OnError = call => Framework.Logger.Log.Logger.Fatal(call.Exception, call.Exception.GetExceptionDetailMessage());
-                })
-                // adds default headers to send with every call
-                .WithHeaders(new
-                {
-                    Accept = "application/json",
-                    User_Agent = "MyCustomUserAgent" // Flurl will convert that underscore to a hyphen
-                }));
-
             container.RegisterType<IDirectoryUtility, DirectoryUtility>();
             container.RegisterType<IFileUploadService, FileUploadService>();
+
+            return _unityContainer;
         }
     }
 }

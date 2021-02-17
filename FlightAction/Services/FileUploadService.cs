@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,6 +56,8 @@ namespace FlightAction.Services
                             continue;
                         }
 
+                        _logger.Information($"Started processing {getResult.Value.Count()} file(s). Start-Time: {DateTime.UtcNow}");
+
                         var currentProcessedDirectory = PrepareProcessedDirectory(currentDirectory);
 
                         foreach (var filePath in getResult.Value)
@@ -65,6 +68,8 @@ namespace FlightAction.Services
                                 _directoryUtility.Move(filePath, Path.Combine(currentProcessedDirectory, Path.GetFileName(filePath)));
                             }
                         }
+
+                        _logger.Information($"Processing completed at: {DateTime.UtcNow}");
                     }
                 },
                 ex =>

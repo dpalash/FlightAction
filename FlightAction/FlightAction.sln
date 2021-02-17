@@ -9,7 +9,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Framework", "..\Framework\F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClassLibraries", "ClassLibraries", "{1395FEEC-2C98-49CC-8714-62E6418371C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlightAction.DTO", "..\ClassLibraries\FlightAction.DTO\FlightAction.DTO.csproj", "{522D307B-9FA5-43FF-89D2-70CB96ACFD4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightAction.DTO", "..\ClassLibraries\FlightAction.DTO\FlightAction.DTO.csproj", "{522D307B-9FA5-43FF-89D2-70CB96ACFD4E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{52951F7F-489C-476A-AB51-5F4A651B7665}"
+	ProjectSection(SolutionItems) = preProject
+		..\Documents\SvcCommans.txt = ..\Documents\SvcCommans.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

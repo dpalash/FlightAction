@@ -4,6 +4,6 @@ namespace Framework.IoC
 {
     public interface IDependencyProvider
     {
-        void RegisterDependencies(IUnityContainer container);
+        IUnityContainer RegisterDependencies(IUnityContainer container);
     }
 }

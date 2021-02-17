@@ -1,34 +1,80 @@
-﻿using FlightAction.IoC;
-using FlightAction.Services.Interfaces;
-using Framework.IoC;
+﻿using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using FlightAction.ExceptionHandling;
+using FlightAction.IoC;
+using Flurl.Http;
+using Framework.Extensions;
+using Framework.WindowsService;
 using Hangfire;
 using Hangfire.MemoryStorage;
-using System;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 using Unity;
-using DomainExceptionHandler = FlightAction.ExceptionHandling.DomainExceptionHandler;
+using Unity.Microsoft.DependencyInjection;
+using FlightActionAsServiceHost = FlightAction.WindowsService.FlightActionAsServiceHost;
 
 namespace FlightAction
 {
-    static class Program
+    public class Program
     {
-        private const string RecurringFileUploadJobName = "Flight-Action-Recurring-File-Upload";
-
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             DomainExceptionHandler.HandleDomainExceptions();
 
-            ConfigureUnityContainer();
-
             GlobalConfigurationSetup();
 
-            ExecuteScheduledJob();
+            var unityContainer = ConfigureUnityContainer();
 
-            //CreateScheduler();
+            var isService = !(Debugger.IsAttached || args.Contains("--console"));
 
-            //using var server = new BackgroundJobServer();
+            if (isService)
+            {
+                var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
+                var pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                Directory.SetCurrentDirectory(pathToContentRoot);
+            }
 
-            //TickerLoop().ConfigureAwait(false).GetAwaiter().GetResult();
+            var hostBuilder = Host.CreateDefaultBuilder(args)
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseUnityServiceProvider(unityContainer)
+                .UseSerilog()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddHostedService<FlightActionAsServiceHost>();
+                });
+
+            //INFO: Don't move this method from here.
+            ConfigureFlurlHttpClient(unityContainer);
+
+            if (isService)
+                await hostBuilder.RunAsServiceAsync();
+            else
+                await hostBuilder.RunConsoleAsync();
+        }
+
+        private static void ConfigureFlurlHttpClient(IUnityContainer unityContainer)
+        {
+            var configuration = unityContainer.Resolve<IConfiguration>();
+
+            // Do this in Startup. All calls to SimpleCast will use the same HttpClient instance.
+            FlurlHttp.ConfigureClient(configuration["ServerHost"], cli => cli
+                .Configure(settings =>
+                {
+                    // keeps logging & error handling out of SimpleCastClient
+                    settings.BeforeCall = call => Framework.Logger.Log.Logger.Information($"Calling: {call.Request.RequestUri}");
+                    settings.AfterCall = call => Framework.Logger.Log.Logger.Information($"Execution completed: {call.Request.RequestUri}");
+                    settings.OnError = call => Framework.Logger.Log.Logger.Fatal(call.Exception, call.Exception.GetExceptionDetailMessage());
+                })
+                // adds default headers to send with every call
+                .WithHeaders(new
+                {
+                    Accept = "application/json",
+                    User_Agent = "MyCustomUserAgent" // Flurl will convert that underscore to a hyphen
+                }));
         }
 
         private static void GlobalConfigurationSetup()
@@ -37,39 +83,12 @@ namespace FlightAction
                 .UseMemoryStorage()
                 .UseColouredConsoleLogProvider()
                 .UseSerilogLogProvider();
-
         }
 
-        private static void ConfigureUnityContainer()
+        private static IUnityContainer ConfigureUnityContainer()
         {
             var unityDependencyProvider = new UnityDependencyProvider();
-            unityDependencyProvider.RegisterDependencies(new UnityContainer());
-        }
-
-        /// <summary>
-        /// This will try to download data periodically based on configuration
-        /// </summary>
-        private static void CreateScheduler()
-        {
-            string cronExp = "*/5 * * * *";// minute hour day month week
-            RecurringJob.AddOrUpdate(RecurringFileUploadJobName, () => ExecuteScheduledJob(), cronExp);
-        }
-
-        // ReSharper disable once MemberCanBePrivate.Global
-        [DisableConcurrentExecution(1000 * 300)]
-        [AutomaticRetry(Attempts = 0)]
-        public static void ExecuteScheduledJob()
-        {
-            var fileUploadService = DependencyUtility.Container.Resolve<IFileUploadService>();
-            fileUploadService.ProcessFilesAsync().Wait();
-        }
-
-        private static async Task TickerLoop()
-        {
-            while (true)
-            {
-                await Task.Delay(TimeSpan.FromMinutes(1));
-            }
+            return unityDependencyProvider.RegisterDependencies(new UnityContainer());
         }
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Framework.Extensions;
-using Framework.IoC;
-using Serilog;
-using Unity;
+//using Framework.Extensions;
+//using Framework.IoC;
 
 namespace FlightAction.ExceptionHandling
 {
@@ -57,8 +55,8 @@ namespace FlightAction.ExceptionHandling
             if (exception == null)
                 return;
 
-            var logger = DependencyUtility.Container.Resolve<ILogger>();
-            logger.Fatal(exception, exception.GetExceptionDetailMessage());
+            //var logger = DependencyUtility.Container.Resolve<ILogger>();
+            //logger.Fatal(exception, exception.GetExceptionDetailMessage());
         }
     }
 

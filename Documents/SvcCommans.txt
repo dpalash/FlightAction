@@ -1,0 +1,3 @@
+sc delete FlightAction
+sc create FlightAction binPath= C:\Users\cefalo\Source\Repos\FlightAction\FlightAction\bin\Debug\netcoreapp3.1\FlightAction.exe
+sc start FlightAction

@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="FileCreateProcessor.cs" />
+    <Compile Remove="Program_Old.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="AppSettings.Development.json" />
     <None Remove="AppSettings.json" />
   </ItemGroup>
@@ -29,6 +34,8 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="5.0.0" />
+    <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="5.11.5" />
   </ItemGroup>
 
   <ItemGroup>
