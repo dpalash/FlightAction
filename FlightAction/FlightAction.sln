@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightAction.DTO", "..\Clas
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{52951F7F-489C-476A-AB51-5F4A651B7665}"
 	ProjectSection(SolutionItems) = preProject
-		..\Documents\SvcCommans.txt = ..\Documents\SvcCommans.txt
+		..\Documents\SvcCommands.txt = ..\Documents\SvcCommands.txt
 	EndProjectSection
 EndProject
 Global
