@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FlightAction.ExceptionHandling;
 using FlightAction.IoC;
+using FlightAction.Models;
 using Flurl.Http;
 using Framework.Extensions;
 using Framework.WindowsService;
@@ -39,6 +40,18 @@ namespace FlightAction
             }
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
+                .ConfigureHostConfiguration(config =>
+                {
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureAppConfiguration((context, builder) =>
+                {
+                    var env = context.HostingEnvironment;
+                    builder.SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("AppSettings.json", optional: false, reloadOnChange: true)
+                        .AddJsonFile($"AppSettings.{env.EnvironmentName}.json", true, true)
+                        .AddEnvironmentVariables();
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseUnityServiceProvider(unityContainer)
                 .UseSerilog()
@@ -64,6 +77,8 @@ namespace FlightAction
             FlurlHttp.ConfigureClient(configuration["ServerHost"], cli => cli
                 .Configure(settings =>
                 {
+                    settings.HttpClientFactory = new UntrustedCertClientFactory();
+
                     // keeps logging & error handling out of SimpleCastClient
                     settings.BeforeCall = call => Framework.Logger.Log.Logger.Information($"Calling: {call.Request.RequestUri}");
                     settings.AfterCall = call => Framework.Logger.Log.Logger.Information($"Execution completed: {call.Request.RequestUri}");

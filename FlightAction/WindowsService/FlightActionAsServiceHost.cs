@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FlightAction.Services.Interfaces;
+using Framework.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -13,6 +14,8 @@ namespace FlightAction.WindowsService
         private readonly IFileUploadService _fileUploadService;
         private readonly IConfiguration _configuration;
         private readonly Serilog.ILogger _logger;
+
+        private static readonly AsyncLock AsyncLock = new AsyncLock();
 
         public FlightActionAsServiceHost(IFileUploadService fileUploadService, IConfiguration configuration, Serilog.ILogger logger)
         {
@@ -26,9 +29,16 @@ namespace FlightAction.WindowsService
             _logger.Information("Service started");
             var processingIntervalInSeconds = Convert.ToDouble(_configuration["IntervalInSeconds"]);
 
-            _paymentProcessorTimer = new Timer((e) =>
+            _paymentProcessorTimer = new Timer(async e =>
                 {
-                    _fileUploadService.ProcessFilesAsync();
+                    // This means this lock instance has already occupied the allocation 1 thread. No available lock instance is available.
+                    if (AsyncLock.CurrentCount() == 0)
+                        return;
+
+                    using (await AsyncLock.LockAsync())
+                    {
+                        await _fileUploadService.ProcessFilesAsync();
+                    }
                 }, null, TimeSpan.Zero,
                 TimeSpan.FromSeconds(processingIntervalInSeconds));
 

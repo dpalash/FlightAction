@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "FlightAction-Development": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "FlightAction-Production": {
+      "commandName": "Project",
+        "environmentVariables": {
+            "DOTNET_ENVIRONMENT": "Production",
+            "ASPNETCORE_ENVIRONMENT": "Production"
+        }
+    }
+  }
+}
