@@ -98,7 +98,7 @@ namespace FlightAction.Services
                  {
                      var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
                      {
-                         UserName = "demoesc01",
+                         UserName = "dpalash23",
                          Password = "12345"
                      });
 
