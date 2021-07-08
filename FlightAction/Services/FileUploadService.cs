@@ -26,6 +26,8 @@ namespace FlightAction.Services
         private readonly IDirectoryUtility _directoryUtility;
         private readonly ILogger _logger;
         private readonly Lazy<string> _baseUrl;
+        private readonly Lazy<string> _userName;
+        private readonly Lazy<string> _password;
         private readonly Lazy<string> _apiKey;
         private readonly Lazy<FileLocation> _fileLocation;
 
@@ -35,6 +37,8 @@ namespace FlightAction.Services
         public FileUploadService(Lazy<IConfiguration> configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
             _baseUrl = new Lazy<string>(configuration.Value["ServerHost"]);
+            _userName = new Lazy<string>(configuration.Value["UserName"]);
+            _password = new Lazy<string>(configuration.Value["Password"]);
             _fileLocation = new Lazy<FileLocation>(configuration.Value.GetSection("FileLocation").Get<FileLocation>());
 
             _directoryUtility = directoryUtility;
@@ -98,8 +102,8 @@ namespace FlightAction.Services
                  {
                      var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
                      {
-                         UserName = "dpalash23",
-                         Password = "12345"
+                         UserName = _userName.Value,
+                         Password = _password.Value
                      });
 
                      var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
@@ -108,7 +112,8 @@ namespace FlightAction.Services
                          .Value
                          .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
                          .AppendPathSegment(ApiCollection.AuthenticationApi.Segment)
-                         .PostAsync(content).ReceiveJson<PrometheusResponse>();
+                         .PostAsync(content)
+                         .ReceiveJson<PrometheusResponse>();
 
                      var responseData = authenticateResponse.Data.ToString().DeserializeObject<AuthenticateResponseDTO>();
 
@@ -126,8 +131,12 @@ namespace FlightAction.Services
 
                      var result = await _baseUrl
                               .Value
-                              .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
-                              .WithHeader("Authorization", $"Bearer {responseData.Token}")
+                              .WithHeaders(new
+                              {
+                                  Accept = "application/json",
+                                  AuthorizationHeader = $"Bearer {responseData.Token}",
+                                  ProApiVersion = ApiCollection.FileUploadApi.DefaultVersion
+                              })
                               .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
                               .PostAsync(content).ReceiveJson<PrometheusResponse>();
 

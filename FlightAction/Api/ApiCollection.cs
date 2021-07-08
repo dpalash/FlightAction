@@ -2,7 +2,8 @@ namespace FlightAction.Api
 {
     public static partial class ApiCollection
     {
-        public const string DefaultHeader = "sf-api-version";
+        public const string DefaultHeader = "ProApiVersion";
+        public const string AuthorizationHeader = "Authorization"; 
 
         public struct AuthenticationApi
         {
