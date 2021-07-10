@@ -31,13 +31,15 @@ namespace FlightAction.Services
         private readonly Lazy<string> _apiKey;
         private readonly Lazy<FileLocation> _fileLocation;
 
+        private static string _token;
+
         private const string ProcessedFileLocation = "Processed";
         private const string NoNewFileToUploadMessage = "No new files available to upload";
 
         public FileUploadService(Lazy<IConfiguration> configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
             _baseUrl = new Lazy<string>(configuration.Value["ServerHost"]);
-            _userName = new Lazy<string>(configuration.Value["UserName"]);
+            _userName = new Lazy<string>(configuration.Value["UserId"]);
             _password = new Lazy<string>(configuration.Value["Password"]);
             _fileLocation = new Lazy<FileLocation>(configuration.Value.GetSection("FileLocation").Get<FileLocation>());
 
@@ -54,6 +56,9 @@ namespace FlightAction.Services
                     foreach (var prop in _fileLocation.Value.GetType().GetProperties())
                     {
                         var currentDirectory = prop.GetValue(_fileLocation.Value, null).ToString();
+                        if (!Directory.Exists(currentDirectory))
+                            Directory.CreateDirectory(currentDirectory);
+
                         var getResult = _directoryUtility.GetAllFilesInDirectory(currentDirectory);
                         if (getResult.HasNoValue)
                         {
@@ -100,45 +105,47 @@ namespace FlightAction.Services
             return await TryCatchExtension.ExecuteAndHandleErrorAsync(
                  async () =>
                  {
-                     var json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
+                     if (string.IsNullOrWhiteSpace(_token) || _token.IsExpired())
                      {
-                         UserName = _userName.Value,
-                         Password = _password.Value
-                     });
+                         var jsonAuthContent = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
+                         {
+                             UserName = _userName.Value,
+                             Password = _password.Value
+                         });
 
-                     var content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
+                         var authContent = new CapturedStringContent(jsonAuthContent, Encoding.UTF8, "application/json-patch+json");
 
-                     var authenticateResponse = await _baseUrl
-                         .Value
-                         .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
-                         .AppendPathSegment(ApiCollection.AuthenticationApi.Segment)
-                         .PostAsync(content)
-                         .ReceiveJson<PrometheusResponse>();
+                         var authenticateResponse = await _baseUrl
+                             .Value
+                             .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
+                             .AppendPathSegment(ApiCollection.AuthenticationApi.Segment)
+                             .PostAsync(authContent)
+                             .ReceiveJson<PrometheusResponse>();
 
-                     var responseData = authenticateResponse.Data.ToString().DeserializeObject<AuthenticateResponseDTO>();
+                         var responseData = authenticateResponse.Data.ToString().DeserializeObject<AuthenticateResponseDTO>();
+                         _token = responseData.Token;
+                     }
 
-                     json = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new TicketFileDTO
+                     var jsonFileUploadContent = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new TicketFileDTO
                      {
                          FileName = Path.GetFileName(filePath),
                          FileType = GetFileType(filePath),
                          MachineInfoDTO = MachineInfoDTO.Create(),
-                         EmployeeId = responseData.EmployeeId,
-                         CompanyId = responseData.CompanyId,
                          FileBytes = File.ReadAllBytes(filePath)
                      });
 
-                     content = new CapturedStringContent(json, Encoding.UTF8, "application/json-patch+json");
+                     var fileUploadContent = new CapturedStringContent(jsonFileUploadContent, Encoding.UTF8, "application/json-patch+json");
 
                      var result = await _baseUrl
                               .Value
                               .WithHeaders(new
                               {
+                                  Authorization = $"Bearer {_token}",
                                   Accept = "application/json",
-                                  AuthorizationHeader = $"Bearer {responseData.Token}",
                                   ProApiVersion = ApiCollection.FileUploadApi.DefaultVersion
                               })
                               .AppendPathSegment(ApiCollection.FileUploadApi.Segment)
-                              .PostAsync(content).ReceiveJson<PrometheusResponse>();
+                              .PostAsync(fileUploadContent).ReceiveJson<PrometheusResponse>();
 
                      return result.StatusCode == HttpStatusCode.OK ? Result.Success(true) : Result.Failure<bool>("File upload failed. Please check log");
                  },
@@ -180,4 +187,5 @@ namespace FlightAction.Services
             return fileType;
         }
     }
+
 }

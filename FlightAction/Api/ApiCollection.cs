@@ -14,7 +14,7 @@ namespace FlightAction.Api
         public struct FileUploadApi
         {
             public const string DefaultVersion = "1.0";
-            public const string Segment = "ticket/register";
+            public const string Segment = "/ticket/register";
         }
     }
 }

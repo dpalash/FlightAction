@@ -58,6 +58,7 @@ namespace FlightAction
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<FlightActionAsServiceHost>();
+                    services.AddHttpClient();
                 });
 
             //INFO: Don't move this method from here.
