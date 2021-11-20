@@ -26,6 +26,7 @@ namespace FlightAction.Services
         private readonly IDirectoryUtility _directoryUtility;
         private readonly ILogger _logger;
         private readonly Lazy<string> _baseUrl;
+        private readonly Lazy<string> _ticketServerUrl;
         private readonly Lazy<string> _userName;
         private readonly Lazy<string> _password;
         private readonly Lazy<string> _apiKey;
@@ -39,6 +40,7 @@ namespace FlightAction.Services
         public FileUploadService(Lazy<IConfiguration> configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
             _baseUrl = new Lazy<string>(configuration.Value["ServerHost"]);
+            _ticketServerUrl = new Lazy<string>(configuration.Value["TicketServerHost"]);
             _userName = new Lazy<string>(configuration.Value["UserId"]);
             _password = new Lazy<string>(configuration.Value["Password"]);
             _fileLocation = new Lazy<FileLocation>(configuration.Value.GetSection("FileLocation").Get<FileLocation>());
@@ -136,7 +138,7 @@ namespace FlightAction.Services
 
                      var fileUploadContent = new CapturedStringContent(jsonFileUploadContent, Encoding.UTF8, "application/json-patch+json");
 
-                     var result = await _baseUrl
+                     var result = await _ticketServerUrl
                               .Value
                               .WithHeaders(new
                               {
