@@ -7,19 +7,16 @@ using FlightAction.IoC;
 using FlightAction.Models;
 using Flurl.Http;
 using Framework.Extensions;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.Extensions.Configuration;
 using Unity;
 
 namespace FlightAction.Core
 {
-    public class InitialSetup
+    public static class InitialSetup
     {
-        public InitialSetup()
-        {
-            
-        }
-
-        private static void ConfigureFlurlHttpClient(IUnityContainer unityContainer)
+        public static void ConfigureFlurlHttpClient(IUnityContainer unityContainer)
         {
             var configuration = unityContainer.Resolve<IConfiguration>();
 
@@ -42,15 +39,15 @@ namespace FlightAction.Core
                 }));
         }
 
-        private static void GlobalConfigurationSetup()
+        public static void GlobalConfigurationSetup()
         {
-            //GlobalConfiguration.Configuration
-            //    .UseMemoryStorage()
-            //    .UseColouredConsoleLogProvider()
-            //    .UseSerilogLogProvider();
+            GlobalConfiguration.Configuration
+                .UseMemoryStorage()
+                .UseColouredConsoleLogProvider()
+                .UseSerilogLogProvider();
         }
 
-        private static IUnityContainer ConfigureUnityContainer()
+        public static IUnityContainer ConfigureUnityContainer()
         {
             var unityDependencyProvider = new UnityDependencyProvider();
             return unityDependencyProvider.RegisterDependencies(new UnityContainer());

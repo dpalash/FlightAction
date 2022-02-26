@@ -40,6 +40,12 @@
     <Reference Include="Flurl.Http">
       <HintPath>..\..\..\..\..\..\.nuget\packages\flurl.http\3.2.2\lib\netstandard2.0\Flurl.Http.dll</HintPath>
     </Reference>
+    <Reference Include="Hangfire.Core">
+      <HintPath>..\..\..\..\..\..\.nuget\packages\hangfire.core\1.7.28\lib\netstandard2.0\Hangfire.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Hangfire.MemoryStorage">
+      <HintPath>..\..\..\..\..\..\.nuget\packages\hangfire.memorystorage\1.7.0\lib\netstandard1.3\Hangfire.MemoryStorage.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Extensions.Configuration, Version=3.1.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\FlightAction\packages\Microsoft.Extensions.Configuration.3.1.8\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll</HintPath>
     </Reference>
@@ -111,10 +117,14 @@
     <Reference Include="Unity.Abstractions">
       <HintPath>..\..\FlightAction\packages\Unity.Abstractions.5.11.2\lib\net47\Unity.Abstractions.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.Container, Version=5.11.4.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>..\..\FlightAction\packages\Unity.Container.5.11.4\lib\net47\Unity.Container.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ApiCollection.cs" />
     <Compile Include="ExceptionHandling\DomainExceptionHandler.cs" />
+    <Compile Include="InitialSetup.cs" />
     <Compile Include="IoC\UnityDependencyProvider.cs" />
     <Compile Include="Models\UntrustedCertClientFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

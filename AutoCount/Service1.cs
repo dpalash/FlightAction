@@ -8,6 +8,8 @@ using System.Linq;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
+using FlightAction.Core;
+using FlightAction.ExceptionHandling;
 
 namespace AutoCount
 {
@@ -20,50 +22,23 @@ namespace AutoCount
 
         protected override void OnStart(string[] args)
         {
-            //DomainExceptionHandler.HandleDomainExceptions();
+            DomainExceptionHandler.HandleDomainExceptions();
 
-            //GlobalConfigurationSetup();
+            InitialSetup.GlobalConfigurationSetup();
 
-            //var unityContainer = ConfigureUnityContainer();
+            var unityContainer = InitialSetup.ConfigureUnityContainer();
 
-            //var isService = !(Debugger.IsAttached || args.Contains("--console"));
+            var isService = !(Debugger.IsAttached || args.Contains("--console"));
 
-            //if (isService)
-            //{
-            //    var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
-            //    var pathToContentRoot = Path.GetDirectoryName(pathToExe);
-            //    Directory.SetCurrentDirectory(pathToContentRoot);
-            //}
+            if (isService)
+            {
+                var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
+                var pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                Directory.SetCurrentDirectory(pathToContentRoot);
+            }
 
-            //var hostBuilder = Host.CreateDefaultBuilder(args)
-            //    .ConfigureHostConfiguration(config =>
-            //    {
-            //        config.AddEnvironmentVariables();
-            //    })
-            //    .ConfigureAppConfiguration((context, builder) =>
-            //    {
-            //        var env = context.HostingEnvironment;
-            //        builder.SetBasePath(Directory.GetCurrentDirectory())
-            //            .AddJsonFile("AppSettings.json", optional: false, reloadOnChange: true)
-            //            .AddJsonFile($"AppSettings.{env.EnvironmentName}.json", true, true)
-            //            .AddEnvironmentVariables();
-            //    })
-            //    .UseContentRoot(Directory.GetCurrentDirectory())
-            //    .UseUnityServiceProvider(unityContainer)
-            //    .UseSerilog()
-            //    .ConfigureServices((hostContext, services) =>
-            //    {
-            //        services.AddHostedService<FlightActionAsServiceHost>();
-            //        services.AddHttpClient();
-            //    });
-
-            ////INFO: Don't move this method from here.
-            //ConfigureFlurlHttpClient(unityContainer);
-
-            //if (isService)
-            //    await hostBuilder.RunAsServiceAsync();
-            //else
-            //    await hostBuilder.RunConsoleAsync();
+            //INFO: Don't move this method from here.
+            InitialSetup.ConfigureFlurlHttpClient(unityContainer);
         }
 
         protected override void OnStop()
