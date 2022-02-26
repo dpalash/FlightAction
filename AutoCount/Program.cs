@@ -17,14 +17,27 @@ namespace AutoCount
                 new Service1()
             };
 
-            if (Environment.UserInteractive)
+#if DEBUG
+            Service1 myService = new Service1();
+            myService.OnDebug();
+            System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
+#else
+            ServiceBase[] ServicesToRun;
+            ServicesToRun = new ServiceBase[]
             {
-                RunInteractive(servicesToRun);
-            }
-            else
-            {
-                ServiceBase.Run(servicesToRun);
-            }
+                new Service1()
+            };
+            ServiceBase.Run(ServicesToRun);
+#endif
+
+            //if (Environment.UserInteractive)
+            //{
+            //    RunInteractive(servicesToRun);
+            //}
+            //else
+            //{
+            //    ServiceBase.Run(servicesToRun);
+            //}
         }
 
         static void RunInteractive(ServiceBase[] servicesToRun)

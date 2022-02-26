@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +13,7 @@ using Unity;
 
 namespace AutoCount
 {
-    public partial class Service1 : ServiceBase
+    public partial class Service1 : ServiceBase, Idi
     {
         private Timer _paymentProcessorTimer;
         private IFileUploadService _fileUploadService;
@@ -28,65 +26,42 @@ namespace AutoCount
         {
             InitializeComponent();
 
-            //DomainExceptionHandler.HandleDomainExceptions();
-
-            //InitialSetup.GlobalConfigurationSetup();
-
-            //var unityContainer = InitialSetup.ConfigureUnityContainer();
-
-            ////INFO: Don't move this method from here.
-            //InitialSetup.ConfigureFlurlHttpClient(unityContainer);
-
-
-            //_fileUploadService = unityContainer.Resolve<IFileUploadService>();
-            //_configuration = unityContainer.Resolve<IConfiguration>();
-            //_logger = unityContainer.Resolve<ILogger>();
-
-            //var _baseUrl = _configuration["ServerHost"];
-            //var _userName = _configuration["UserId"];
-            //var _password = _configuration["Password"];
-            //var _fileLocation = new FileLocation
-            //{
-            //    Air = _configuration.GetSection("FileLocation:Air").Value,
-            //    Pnr = _configuration.GetSection("FileLocation:Pnr").Value,
-            //    Mir = _configuration.GetSection("FileLocation:Mir").Value
-            //};
-
-            //_logger.Information("Service started");
+            PrepareInitialSetups();
         }
 
-        protected override void OnStart(string[] args)
+        private void PrepareInitialSetups()
         {
-            DebugMode();
-            /* ... do the rest */
-
             DomainExceptionHandler.HandleDomainExceptions();
 
             InitialSetup.GlobalConfigurationSetup();
 
             var unityContainer = InitialSetup.ConfigureUnityContainer();
 
-            var isService = !(Debugger.IsAttached || args.Contains("--console"));
-
-            if (isService)
-            {
-                var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
-
-                var pathToContentRoot = Path.GetDirectoryName(pathToExe);
-                if (pathToContentRoot != null)
-                    Directory.SetCurrentDirectory(pathToContentRoot);
-            }
+            //INFO: Don't move this method from here.
+            InitialSetup.ConfigureFlurlHttpClient(unityContainer);
 
             _fileUploadService = unityContainer.Resolve<IFileUploadService>();
             _configuration = unityContainer.Resolve<IConfiguration>();
             _logger = unityContainer.Resolve<ILogger>();
+        }
 
-            //INFO: Don't move this method from here.
-            InitialSetup.ConfigureFlurlHttpClient(unityContainer);
+        public void OnDebug()
+        {
+            OnStart(null);
+        }
+
+        protected override void OnStart(string[] args)
+        {
+#if DEBUG
+            Debugger.Launch(); // launch and attach debugger
+#endif
+
+            StartAsync(new CancellationToken()).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected override void OnStop()
         {
+            StopAsync(new CancellationToken()).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -121,12 +96,6 @@ namespace AutoCount
         public void Dispose()
         {
             _paymentProcessorTimer?.Dispose();
-        }
-
-        [Conditional("DEBUG_SERVICE")]
-        private static void DebugMode()
-        {
-            Debugger.Break();
         }
     }
 }
