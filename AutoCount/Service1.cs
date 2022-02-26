@@ -18,6 +18,15 @@ namespace AutoCount
         public Service1()
         {
             InitializeComponent();
+
+            DomainExceptionHandler.HandleDomainExceptions();
+
+            InitialSetup.GlobalConfigurationSetup();
+
+            var unityContainer = InitialSetup.ConfigureUnityContainer();
+
+            //INFO: Don't move this method from here.
+            InitialSetup.ConfigureFlurlHttpClient(unityContainer);
         }
 
         protected override void OnStart(string[] args)

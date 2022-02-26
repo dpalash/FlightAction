@@ -1,9 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using Serilog.Debugging;
 
 namespace AutoCount
 {
@@ -42,7 +39,7 @@ namespace AutoCount
         //    else
         //    {
         //        Log.Logger = new LoggerConfiguration()
-                    
+
         //            .WriteTo.File($@"{Directory.GetCurrentDirectory()}\log\log.txt", rollingInterval: RollingInterval.Day)
         //            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
         //            .MinimumLevel.Debug()
