@@ -24,32 +24,32 @@ namespace FlightAction.IoC
 
             DependencyUtility.SetContainer(container);
 
-            //container.RegisterFactory<IConfiguration>(m =>
-            //{
-            //    IConfiguration configuration = new ConfigurationBuilder()
-            //        .SetBasePath(Directory.GetCurrentDirectory())
-            //        .AddJsonFile("AppSettings.json", false, true)
-            //        .AddJsonFile($"AppSettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
-            //        .AddEnvironmentVariables()
-            //        .Build();
+            container.RegisterFactory<IConfiguration>(m =>
+            {
+                IConfiguration configuration = new ConfigurationBuilder()
+                    //.SetBasePath(Directory.GetCurrentDirectory())
+                    //.AddJsonFile("AppSettings.json", false, true)
+                    //.AddJsonFile($"AppSettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
+                    //.AddEnvironmentVariables()
+                    .Build();
 
-            //    return configuration;
-            //}, new ContainerControlledLifetimeManager());
+                return configuration;
+            }, new ContainerControlledLifetimeManager());
 
 
-            //container.RegisterFactory<ILogger>(m =>
-            //{
-            //    ILogger log = new LoggerConfiguration()
-            //         .ReadFrom.Configuration(Configuration)
-            //         .Enrich.FromLogContext()
-            //         .WriteTo.File($@"{Directory.GetCurrentDirectory()}\log\log.txt", rollingInterval: RollingInterval.Day)
-            //         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-            //         .CreateLogger();
+            container.RegisterFactory<ILogger>(m =>
+            {
+                ILogger log = new LoggerConfiguration()
+                     .ReadFrom.Configuration(Configuration)
+                     .Enrich.FromLogContext()
+                     .WriteTo.File($@"{Directory.GetCurrentDirectory()}\log\log.txt", rollingInterval: RollingInterval.Day)
+                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+                     .CreateLogger();
 
-            //    Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
+                Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
 
-            //    return log;
-            //}, new ContainerControlledLifetimeManager());
+                return log;
+            }, new ContainerControlledLifetimeManager());
 
             container.RegisterType<IDirectoryUtility, DirectoryUtility>();
             container.RegisterType<IFileUploadService, FileUploadService>();
