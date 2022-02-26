@@ -26,14 +26,16 @@ namespace FlightAction.IoC
 
             container.RegisterFactory<IConfiguration>(m =>
             {
+                var appSettingsName = !Environment.UserInteractive ? "AppSettings.Development.json" : "AppSettings.Production.json";
+
                 IConfiguration configuration = new ConfigurationBuilder()
-                    //.SetBasePath(Directory.GetCurrentDirectory())
-                    //.AddJsonFile("AppSettings.json", false, true)
-                    //.AddJsonFile($"AppSettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
-                    //.AddEnvironmentVariables()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("AppSettings.json", false, true)
+                    .AddJsonFile(appSettingsName, true)
                     .Build();
 
                 return configuration;
+
             }, new ContainerControlledLifetimeManager());
 
 

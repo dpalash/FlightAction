@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System;
+using System.Reflection;
 using System.ServiceProcess;
+using System.Threading;
 
 namespace AutoCount
 {
@@ -11,45 +12,53 @@ namespace AutoCount
         /// </summary>
         static void Main()
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            var servicesToRun = new ServiceBase[]
             {
                 new Service1()
             };
-            ServiceBase.Run(ServicesToRun);
+
+            if (Environment.UserInteractive)
+            {
+                RunInteractive(servicesToRun);
+            }
+            else
+            {
+                ServiceBase.Run(servicesToRun);
+            }
         }
 
-        //public static void AddLogging(this IServiceCollection services, Microsoft.Extensions.Logging.LogLevel logLevel)
-        //{
-        //    if (!environment.IsDevelopment())
-        //    {
-        //        var connectionString = configuration["Logging:LogStorageConnectionString"];
-        //        var containerName = configuration["Logging:LogContainerName"];
+        static void RunInteractive(ServiceBase[] servicesToRun)
+        {
+            Console.WriteLine(@"Services running in interactive mode.");
+            Console.WriteLine();
 
-        //        var telemetryConfiguration = TelemetryConfiguration.CreateDefault();
-        //        telemetryConfiguration.InstrumentationKey = configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+            MethodInfo onStartMethod = typeof(ServiceBase).GetMethod("OnStart", BindingFlags.Instance | BindingFlags.NonPublic);
+            foreach (ServiceBase service in servicesToRun)
+            {
+                Console.Write(@"Starting {0}...", service.ServiceName);
+                onStartMethod?.Invoke(service, new object[] { new string[] { } });
+                Console.Write(@"Started");
+            }
 
-        //        Log.Logger = new Serilog.LoggerConfiguration()
-        //            .WriteTo.AzureBlobStorage(connectionString, Serilog.Events.LogEventLevel.Verbose, containerName, "{yyyy}/{MM}/{dd}/log.txt")
-        //            .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces)
-        //            .MinimumLevel.Debug()
-        //            .CreateLogger();
-        //    }
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine(@"Press any key to stop the services and end the process...");
+            Console.ReadKey();
+            Console.WriteLine();
 
-        //    else
-        //    {
-        //        Log.Logger = new LoggerConfiguration()
+            MethodInfo onStopMethod = typeof(ServiceBase).GetMethod("OnStop", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        //            .WriteTo.File($@"{Directory.GetCurrentDirectory()}\log\log.txt", rollingInterval: RollingInterval.Day)
-        //            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-        //            .MinimumLevel.Debug()
-        //            .CreateLogger();
-        //    }
+            foreach (ServiceBase service in servicesToRun)
+            {
+                Console.Write(@"Stopping {0}...", service.ServiceName);
+                onStopMethod.Invoke(service, null);
+                Console.WriteLine(@"Stopped");
+            }
 
-        //    SelfLog.Enable(msg => Debug.WriteLine(msg));
+            Console.WriteLine(@"All services stopped.");
 
-        //    services.AddSingleton(Serilog.Log.Logger);
-        //    services.AddSingleton<Infrastructure.Logging.Contracts.ILogger, SerilogLogger>();
-        //}
+            // Keep the console alive for a second to allow the user to see the message.
+            Thread.Sleep(1000);
+        }
     }
 }

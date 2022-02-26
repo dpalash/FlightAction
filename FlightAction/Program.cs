@@ -1,12 +1,5 @@
-﻿using AutoCount;
-using FlightAction.ExceptionHandling;
-using FlightAction.IoC;
-using FlightAction.Models;
-using Flurl.Http;
-using Framework.Extensions;
+﻿using FlightAction.ExceptionHandling;
 using Framework.WindowsService;
-using Hangfire;
-using Hangfire.MemoryStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FlightAction.Core;
-using Unity;
 using Unity.Microsoft.DependencyInjection;
 using FlightActionAsServiceHost = FlightAction.WindowsService.FlightActionAsServiceHost;
 

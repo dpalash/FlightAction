@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FlightAction.IoC;
+﻿using FlightAction.IoC;
 using FlightAction.Models;
 using Flurl.Http;
 using Framework.Extensions;
