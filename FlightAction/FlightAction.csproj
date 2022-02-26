@@ -20,19 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ExceptionHandling\**" />
-    <Compile Remove="IoC\**" />
     <Compile Remove="Models\**" />
     <Compile Remove="Services\**" />
     <Content Remove="ExceptionHandling\**" />
-    <Content Remove="IoC\**" />
     <Content Remove="Models\**" />
     <Content Remove="Services\**" />
     <EmbeddedResource Remove="ExceptionHandling\**" />
-    <EmbeddedResource Remove="IoC\**" />
     <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="Services\**" />
     <None Remove="ExceptionHandling\**" />
-    <None Remove="IoC\**" />
     <None Remove="Models\**" />
     <None Remove="Services\**" />
   </ItemGroup>
@@ -64,7 +60,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="IoC\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
