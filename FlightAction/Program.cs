@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoCount;
 using FlightAction.ExceptionHandling;
 using FlightAction.IoC;
 using FlightAction.Models;
@@ -14,6 +11,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Unity;
 using Unity.Microsoft.DependencyInjection;
 using FlightActionAsServiceHost = FlightAction.WindowsService.FlightActionAsServiceHost;
@@ -81,8 +82,8 @@ namespace FlightAction
                     settings.HttpClientFactory = new UntrustedCertClientFactory();
 
                     // keeps logging & error handling out of SimpleCastClient
-                    settings.BeforeCall = call => Framework.Logger.Log.Logger.Information($"Calling: {call.Request.RequestUri}");
-                    settings.AfterCall = call => Framework.Logger.Log.Logger.Information($"Execution completed: {call.Request.RequestUri}");
+                    settings.BeforeCall = call => Framework.Logger.Log.Logger.Information($"Calling: {call.Request.Url.Path}");
+                    settings.AfterCall = call => Framework.Logger.Log.Logger.Information($"Execution completed: {call.Request.Url.Path}");
                     settings.OnError = call => Framework.Logger.Log.Logger.Fatal(call.Exception, call.Exception.GetExceptionDetailMessage());
                 })
                 // adds default headers to send with every call

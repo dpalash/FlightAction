@@ -25,23 +25,28 @@ namespace FlightAction.Services
     {
         private readonly IDirectoryUtility _directoryUtility;
         private readonly ILogger _logger;
-        private readonly Lazy<string> _baseUrl;
-        private readonly Lazy<string> _userName;
-        private readonly Lazy<string> _password;
-        private readonly Lazy<string> _apiKey;
-        private readonly Lazy<FileLocation> _fileLocation;
+        private readonly string _baseUrl;
+        private readonly string _userName;
+        private readonly string _password;
+        private readonly string _apiKey;
+        private readonly FileLocation _fileLocation;
 
         private static string _token;
 
         private const string ProcessedFileLocation = "Processed";
         private const string NoNewFileToUploadMessage = "No new files available to upload";
 
-        public FileUploadService(Lazy<IConfiguration> configuration, IDirectoryUtility directoryUtility, ILogger logger)
+        public FileUploadService(IConfiguration configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
-            _baseUrl = new Lazy<string>(configuration.Value["ServerHost"]);
-            _userName = new Lazy<string>(configuration.Value["UserId"]);
-            _password = new Lazy<string>(configuration.Value["Password"]);
-            _fileLocation = new Lazy<FileLocation>(configuration.Value.GetSection("FileLocation").Get<FileLocation>());
+            _baseUrl = configuration["ServerHost"];
+            _userName = configuration["UserId"];
+            _password = configuration["Password"];
+            _fileLocation = new FileLocation
+            {
+                Air = configuration.GetSection("FileLocation:Air").Value,
+                Pnr = configuration.GetSection("FileLocation:Pnr").Value,
+                Mir = configuration.GetSection("FileLocation:Mir").Value
+            };
 
             _directoryUtility = directoryUtility;
             _logger = logger;
@@ -53,9 +58,9 @@ namespace FlightAction.Services
             await TryCatchExtension.ExecuteAndHandleErrorAsync(
                 async () =>
                 {
-                    foreach (var prop in _fileLocation.Value.GetType().GetProperties())
+                    foreach (var prop in _fileLocation.GetType().GetProperties())
                     {
-                        var currentDirectory = prop.GetValue(_fileLocation.Value, null).ToString();
+                        var currentDirectory = prop.GetValue(_fileLocation, null).ToString();
                         if (!Directory.Exists(currentDirectory))
                             Directory.CreateDirectory(currentDirectory);
 
@@ -109,14 +114,13 @@ namespace FlightAction.Services
                      {
                          var jsonAuthContent = FlurlHttp.GlobalSettings.JsonSerializer.Serialize(new AuthenticateRequestDTO
                          {
-                             UserName = _userName.Value,
-                             Password = _password.Value
+                             UserName = _userName,
+                             Password = _password
                          });
 
                          var authContent = new CapturedStringContent(jsonAuthContent, "application/json-patch+json");
 
                          var authenticateResponse = await _baseUrl
-                             .Value
                              .WithHeader(ApiCollection.DefaultHeader, ApiCollection.FileUploadApi.DefaultVersion)
                              .AppendPathSegment(ApiCollection.AuthenticationApi.Segment)
                              .PostAsync(authContent)
@@ -131,13 +135,12 @@ namespace FlightAction.Services
                          FileName = Path.GetFileName(filePath),
                          FileType = GetFileType(filePath),
                          MachineInfoDTO = MachineInfoDTO.Create(),
-                         FileBytes = await File.ReadAllBytesAsync(filePath)
+                         FileBytes = File.ReadAllBytes(filePath)
                      });
 
                      var fileUploadContent = new CapturedStringContent(jsonFileUploadContent, "application/json-patch+json");
 
                      var result = await _baseUrl
-                              .Value
                               .WithHeaders(new
                               {
                                   Authorization = $"Bearer {_token}",
