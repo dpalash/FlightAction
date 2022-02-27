@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-//using Framework.Extensions;
-//using Framework.IoC;
-
 namespace FlightAction.Core.ExceptionHandling
 {
     /// <summary>
