@@ -4,8 +4,8 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using FlightAction.Core;
-using FlightAction.ExceptionHandling;
-using FlightAction.Services.Interfaces;
+using FlightAction.Core.ExceptionHandling;
+using FlightAction.Core.Services.Interfaces;
 using Framework.Utility;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -13,7 +13,7 @@ using Unity;
 
 namespace AutoCount
 {
-    public partial class Service1 : ServiceBase, Idi
+    public partial class AutoCountService : ServiceBase
     {
         private Timer _paymentProcessorTimer;
         private IFileUploadService _fileUploadService;
@@ -22,7 +22,7 @@ namespace AutoCount
 
         private static readonly AsyncLock AsyncLock = new AsyncLock();
 
-        public Service1()
+        public AutoCountService()
         {
             InitializeComponent();
 

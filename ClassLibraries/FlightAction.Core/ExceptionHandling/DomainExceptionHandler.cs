@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+
 //using Framework.Extensions;
 //using Framework.IoC;
 
-namespace FlightAction.ExceptionHandling
+namespace FlightAction.Core.ExceptionHandling
 {
     /// <summary>
     /// Unhandled event registrar.

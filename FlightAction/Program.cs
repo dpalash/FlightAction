@@ -1,5 +1,4 @@
-﻿using FlightAction.ExceptionHandling;
-using Framework.WindowsService;
+﻿using Framework.WindowsService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FlightAction.Core;
+using FlightAction.Core.ExceptionHandling;
 using Unity.Microsoft.DependencyInjection;
 using FlightActionAsServiceHost = FlightAction.WindowsService.FlightActionAsServiceHost;
 

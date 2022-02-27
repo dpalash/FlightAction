@@ -14,13 +14,13 @@ namespace AutoCount
         {
             var servicesToRun = new ServiceBase[]
             {
-                new Service1()
+                new AutoCountService()
             };
 
 #if DEBUG
-            Service1 myService = new Service1();
+            AutoCountService myService = new AutoCountService();
             myService.OnDebug();
-            System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
+            Thread.Sleep(Timeout.Infinite);
 #else
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[]

@@ -1,4 +1,4 @@
-namespace FlightAction.Api
+namespace FlightAction.Core.Api
 {
     public static partial class ApiCollection
     {

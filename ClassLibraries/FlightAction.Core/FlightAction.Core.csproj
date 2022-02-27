@@ -159,18 +159,18 @@
     <Compile Include="Services\Interfaces\IFileUploadService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ClassLibrary1\Framework.csproj">
-      <Project>{20bbb516-04b1-49e0-b3f4-05c9ce44274a}</Project>
-      <Name>Framework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ClassLibrary1\FlightAction.DTO.csproj">
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FlightAction.DTO\FlightAction.DTO.csproj">
       <Project>{8e4d9895-c034-4405-8c77-4960202412a6}</Project>
       <Name>FlightAction.DTO</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Framework\Framework.csproj">
+      <Project>{20bbb516-04b1-49e0-b3f4-05c9ce44274a}</Project>
+      <Name>Framework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,7 +1,7 @@
 ﻿
 namespace AutoCount
 {
-    partial class Service1
+    partial class AutoCountService
     {
         /// <summary> 
         /// Required designer variable.

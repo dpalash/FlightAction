@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FlightAction.Services.Interfaces;
+using FlightAction.Core.Services.Interfaces;
 using Framework.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

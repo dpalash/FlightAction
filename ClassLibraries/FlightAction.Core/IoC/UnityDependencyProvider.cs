@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using FlightAction.Services;
-using FlightAction.Services.Interfaces;
+using FlightAction.Core.Services;
+using FlightAction.Core.Services.Interfaces;
 using Framework.IoC;
 using Framework.Utility;
 using Framework.Utility.Interfaces;
@@ -11,7 +11,7 @@ using Serilog;
 using Unity;
 using Unity.Lifetime;
 
-namespace FlightAction.IoC
+namespace FlightAction.Core.IoC
 {
     public class UnityDependencyProvider : IDependencyProvider
     {

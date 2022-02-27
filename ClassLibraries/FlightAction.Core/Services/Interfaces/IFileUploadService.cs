@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace FlightAction.Services.Interfaces
+namespace FlightAction.Core.Services.Interfaces
 {
     public interface IFileUploadService
     {

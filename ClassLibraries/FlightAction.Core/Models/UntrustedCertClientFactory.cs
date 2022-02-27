@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using Flurl.Http.Configuration;
 
-namespace FlightAction.Models
+namespace FlightAction.Core.Models
 {
     public class UntrustedCertClientFactory : DefaultHttpClientFactory
     {

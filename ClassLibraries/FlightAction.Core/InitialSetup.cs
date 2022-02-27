@@ -1,5 +1,5 @@
-﻿using FlightAction.IoC;
-using FlightAction.Models;
+﻿using FlightAction.Core.IoC;
+using FlightAction.Core.Models;
 using Flurl.Http;
 using Framework.Extensions;
 using Hangfire;

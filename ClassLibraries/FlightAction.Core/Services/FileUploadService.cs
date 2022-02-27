@@ -4,10 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using FlightAction.Api;
+using FlightAction.Core.Api;
+using FlightAction.Core.Services.Interfaces;
 using FlightAction.DTO;
 using FlightAction.DTO.Enum;
-using FlightAction.Services.Interfaces;
 using Flurl.Http;
 using Flurl.Http.Content;
 using Framework.Base.ModelEntity;
@@ -18,7 +18,7 @@ using Framework.Utility.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
-namespace FlightAction.Services
+namespace FlightAction.Core.Services
 {
     public class FileUploadService : IFileUploadService
     {

@@ -171,19 +171,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoCountService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="AutoCountService.Designer.cs">
+      <DependentUpon>AutoCountService.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
-    <Compile Include="Service1.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Service1.Designer.cs">
-      <DependentUpon>Service1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -194,19 +194,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ProjectInstaller.resx">
-      <DependentUpon>ProjectInstaller.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ClassLibraries\FlightAction.Core\FlightAction.Core.csproj">
       <Project>{0414cbf3-8818-4c8e-9a2b-95fba994c319}</Project>
       <Name>FlightAction.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ClassLibrary1\Framework.csproj">
+    <ProjectReference Include="..\ClassLibraries\Framework\Framework.csproj">
       <Project>{20bbb516-04b1-49e0-b3f4-05c9ce44274a}</Project>
       <Name>Framework</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectInstaller.resx">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\FlightAction\packages\System.Text.Json.6.0.0\build\System.Text.Json.targets" Condition="Exists('..\FlightAction\packages\System.Text.Json.6.0.0\build\System.Text.Json.targets')" />
