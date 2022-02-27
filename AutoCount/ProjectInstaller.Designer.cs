@@ -42,6 +42,7 @@ namespace AutoCount
             // 
             this.serviceInstaller.ServiceName = "AutoCount";
             this.serviceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+            this.serviceInstaller.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller_AfterInstall);
             // 
             // ProjectInstaller
             // 

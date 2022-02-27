@@ -92,10 +92,5 @@ namespace AutoCount
             _paymentProcessorTimer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }
-
-        public void Dispose()
-        {
-            _paymentProcessorTimer?.Dispose();
-        }
     }
 }

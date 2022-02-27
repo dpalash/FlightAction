@@ -88,7 +88,7 @@ namespace FlightAction.Core.Services
                 },
                 ex =>
                 {
-                    _logger.Fatal(ex, $"Error occured in {nameof(ProcessFilesAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
+                    _logger.Fatal(ex, $"Error occurred in {nameof(ProcessFilesAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
                     return false;
                 });
         }
@@ -155,7 +155,7 @@ namespace FlightAction.Core.Services
                  {
                      AdditionalAction = () =>
                      {
-                         _logger.Fatal(ex, $"Error occured in {nameof(UploadFileToServerAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
+                         _logger.Fatal(ex, $"Error occurred in {nameof(UploadFileToServerAsync)}. Exception Message:{ex.Message}. Details: {ex.GetExceptionDetailMessage()}");
                      },
 
                      DefaultResult = Result.Failure<bool>($"Error message: {ex.Message}. Details: {ex.GetExceptionDetailMessage()}"),
