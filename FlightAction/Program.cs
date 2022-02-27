@@ -1,14 +1,14 @@
-﻿using Framework.WindowsService;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FlightAction.Core;
 using FlightAction.Core.ExceptionHandling;
+using Framework.WindowsService;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Unity.Microsoft.DependencyInjection;
 using FlightActionAsServiceHost = FlightAction.WindowsService.FlightActionAsServiceHost;
 

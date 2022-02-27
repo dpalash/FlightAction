@@ -44,13 +44,15 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.0" />
+    <PackageReference Include="Unity" Version="5.11.10" />
     <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="5.11.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AutoCount\AutoCount.csproj" />
-    <ProjectReference Include="..\ClassLibraries\ClassLibrary1\FlightAction.DTO.csproj" />
     <ProjectReference Include="..\ClassLibraries\FlightAction.Core\FlightAction.Core.csproj" />
+    <ProjectReference Include="..\ClassLibraries\FlightAction.DTO\FlightAction.DTO.csproj" />
+    <ProjectReference Include="..\ClassLibraries\Framework\Framework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
