@@ -68,7 +68,8 @@ namespace AutoCount
         {
             _logger.Information("Service started");
 
-            var processingIntervalInSeconds = Convert.ToDouble(_configuration["IntervalInSeconds"]);
+            //var processingIntervalInSeconds = Convert.ToDouble(_configuration["IntervalInSeconds"]);
+            var processingIntervalInSeconds = Convert.ToDouble(System.Configuration.ConfigurationSettings.AppSettings["IntervalInSeconds"]);
 
             _paymentProcessorTimer = new Timer(async e =>
                 {

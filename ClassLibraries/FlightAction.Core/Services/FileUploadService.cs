@@ -37,14 +37,14 @@ namespace FlightAction.Core.Services
 
         public FileUploadService(IConfiguration configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
-            _baseUrl = configuration["ServerHost"];
-            _userName = configuration["UserId"];
-            _password = configuration["Password"];
+            _baseUrl = System.Configuration.ConfigurationSettings.AppSettings["ServerHost"];
+            _userName = System.Configuration.ConfigurationSettings.AppSettings["UserId"];
+            _password = System.Configuration.ConfigurationSettings.AppSettings["Password"];
             _fileLocation = new FileLocation
             {
-                Air = configuration.GetSection("FileLocation:Air").Value,
-                Pnr = configuration.GetSection("FileLocation:Pnr").Value,
-                Mir = configuration.GetSection("FileLocation:Mir").Value
+                Air = System.Configuration.ConfigurationSettings.AppSettings["FileLocation:Air"],
+                Pnr = System.Configuration.ConfigurationSettings.AppSettings["FileLocation:Pnr"],
+                Mir = System.Configuration.ConfigurationSettings.AppSettings["FileLocation:Mir"]
             };
 
             _directoryUtility = directoryUtility;
@@ -53,15 +53,30 @@ namespace FlightAction.Core.Services
 
         public async Task ProcessFilesAsync()
         {
-
             await TryCatchExtension.ExecuteAndHandleErrorAsync(
                 async () =>
                 {
+                    _logger.Information($"ProcessFilesAsync() 01: {_fileLocation.GetType().GetProperties()}");
+
                     foreach (var prop in _fileLocation.GetType().GetProperties())
                     {
+                        _logger.Information($"ProcessFilesAsync() 02 - {prop.Name}");
+
+                        var ss = prop.GetValue(_fileLocation, null);
+
+                        _logger.Information($"ProcessFilesAsync() 03 - {_baseUrl}");
+                        _logger.Information($"ProcessFilesAsync() 03 - {_userName}");
+                        _logger.Information($"ProcessFilesAsync() 03 - {_password}");
+                        _logger.Information($"ProcessFilesAsync() 03 - {_fileLocation.Air}");
+
                         var currentDirectory = prop.GetValue(_fileLocation, null).ToString();
+                        _logger.Information($"ProcessFilesAsync() 03 - {currentDirectory}");
+
                         if (!Directory.Exists(currentDirectory))
+                        {
+                            _logger.Information($"ProcessFilesAsync() 04: {currentDirectory}");
                             Directory.CreateDirectory(currentDirectory);
+                        }
 
                         var getResult = _directoryUtility.GetAllFilesInDirectory(currentDirectory);
                         if (getResult.HasNoValue)

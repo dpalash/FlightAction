@@ -26,11 +26,10 @@ namespace FlightAction.Core.IoC
 
             container.RegisterFactory<IConfiguration>(m =>
             {
-                var appSettingsName = !Environment.UserInteractive ? "AppSettings.Development.json" : "AppSettings.Production.json";
+                var appSettingsName = "AppSettings.json";
 
                 IConfiguration configuration = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("AppSettings.json", false, true)
                     .AddJsonFile(appSettingsName, true)
                     .Build();
 
@@ -44,13 +43,14 @@ namespace FlightAction.Core.IoC
                 ILogger log = new LoggerConfiguration()
                      .ReadFrom.Configuration(Configuration)
                      .Enrich.FromLogContext()
-                     .WriteTo.File($@"{Directory.GetCurrentDirectory()}\log\log.txt", rollingInterval: RollingInterval.Day)
-                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+                     .WriteTo.File($@"{AppDomain.CurrentDomain.BaseDirectory}\log\log.txt", rollingInterval: RollingInterval.Day)
                      .CreateLogger();
 
                 Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
 
-                return log;
+                log.Error($"An error occurred while uploading and processing the file. Error:");
+
+                                return log;
             }, new ContainerControlledLifetimeManager());
 
             container.RegisterType<IDirectoryUtility, DirectoryUtility>();
