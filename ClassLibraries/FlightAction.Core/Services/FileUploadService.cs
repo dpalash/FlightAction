@@ -56,25 +56,12 @@ namespace FlightAction.Core.Services
             await TryCatchExtension.ExecuteAndHandleErrorAsync(
                 async () =>
                 {
-                    _logger.Information($"ProcessFilesAsync() 01: {_fileLocation.GetType().GetProperties()}");
-
                     foreach (var prop in _fileLocation.GetType().GetProperties())
                     {
-                        _logger.Information($"ProcessFilesAsync() 02 - {prop.Name}");
-
-                        var ss = prop.GetValue(_fileLocation, null);
-
-                        _logger.Information($"ProcessFilesAsync() 03 - {_baseUrl}");
-                        _logger.Information($"ProcessFilesAsync() 03 - {_userName}");
-                        _logger.Information($"ProcessFilesAsync() 03 - {_password}");
-                        _logger.Information($"ProcessFilesAsync() 03 - {_fileLocation.Air}");
-
                         var currentDirectory = prop.GetValue(_fileLocation, null).ToString();
-                        _logger.Information($"ProcessFilesAsync() 03 - {currentDirectory}");
 
                         if (!Directory.Exists(currentDirectory))
                         {
-                            _logger.Information($"ProcessFilesAsync() 04: {currentDirectory}");
                             Directory.CreateDirectory(currentDirectory);
                         }
 
