@@ -35,6 +35,7 @@ namespace FlightAction.Core.Services
         private const string ProcessedFileLocation = "Processed";
         private const string NoNewFileToUploadMessage = "No new files available to upload";
 
+        [Obsolete]
         public FileUploadService(IConfiguration configuration, IDirectoryUtility directoryUtility, ILogger logger)
         {
             _baseUrl = System.Configuration.ConfigurationSettings.AppSettings["ServerHost"];

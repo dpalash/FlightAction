@@ -69,7 +69,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <Content Include="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="AppSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -78,6 +80,10 @@
     <ProjectReference Include="..\ClassLibraries\FlightAction.Core\FlightAction.Core.csproj">
       <Project>{0414cbf3-8818-4c8e-9a2b-95fba994c319}</Project>
       <Name>FlightAction.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ClassLibraries\FlightAction.DTO\FlightAction.DTO.csproj">
+      <Project>{8e4d9895-c034-4405-8c77-4960202412a6}</Project>
+      <Name>FlightAction.DTO</Name>
     </ProjectReference>
     <ProjectReference Include="..\ClassLibraries\Framework\Framework.csproj">
       <Project>{20bbb516-04b1-49e0-b3f4-05c9ce44274a}</Project>
@@ -195,6 +201,9 @@
     <PackageReference Include="Unity.Abstractions">
       <Version>5.11.5</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
