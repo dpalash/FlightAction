@@ -74,7 +74,7 @@ namespace FlightAction.Core.Services
 
                         _logger.Information($"Started processing [{getResult.Value.Count()}] file(s) from location: [{currentDirectory}]. Start-Time: {DateTime.UtcNow}");
 
-                        var currentProcessedDirectory = PrepareProcessedDirectory(currentDirectory);
+                        var currentProcessedDirectory = PrepareProcessedDirectory(currentDirectory, prop.Name);
 
                         foreach (var filePath in getResult.Value)
                         {
@@ -95,12 +95,11 @@ namespace FlightAction.Core.Services
                 });
         }
 
-        private string PrepareProcessedDirectory(string currentDirectory)
+        private string PrepareProcessedDirectory(string currentDirectory, string fileType)
         {
-            var currentProcessedDirectory = Path.Combine(currentDirectory, @"..\");
-            currentProcessedDirectory = Path.Combine(currentProcessedDirectory, ProcessedFileLocation, DateTime.Now.ToString(Constants.DateFormatter.yyyy_MM_dd_Dash_Delimited));
+            var currentProcessedDirectory = Path.Combine(currentDirectory.Replace(fileType, ""), @"AutoCountCaptured");
+            currentProcessedDirectory = Path.Combine(currentProcessedDirectory, fileType, DateTime.Now.ToString(Constants.DateFormatter.yyyy_MM_dd_Dash_Delimited));
 
-            _directoryUtility.CreateFolderIfNotExistAsync(ProcessedFileLocation);
             _directoryUtility.CreateFolderIfNotExistAsync(currentProcessedDirectory);
 
             return currentProcessedDirectory;
